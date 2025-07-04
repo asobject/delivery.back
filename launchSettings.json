@@ -1,0 +1,26 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "redis": "StartWithoutDebugging",
+        "userauth.api": "StartDebugging",
+        "userauth.api.migrations": "DoNotStart",
+        "api-gateaway": "StartDebugging",
+        "order.api": "StartDebugging",
+        "order.api.migrations": "DoNotStart",
+        "rabbitmq": "StartWithoutDebugging",
+        "admin.api": "StartDebugging",
+        "admin.api.migrations": "DoNotStart",
+        "companypoints.api": "StartDebugging",
+        "companypoints.api.migrations": "DoNotStart",
+        "email.api": "StartDebugging",
+        "orderhistory.api": "StartDebugging",
+        "orderhistory.api.migrations": "DoNotStart",
+        "chat.api": "StartDebugging",
+        "ollama": "StartWithoutDebugging"
+      }
+    }
+  }
+}

@@ -1,0 +1,276 @@
+services:
+  redis:
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: ecommerce-mq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - internal
+  ollama:
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - internal
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+              
+ 
+  api-gateaway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_HTTP_PORTS=8080
+    env_file:
+      - .env
+      - gateaway/YarpApiGateaway/.env
+    ports:
+      - "5000:8080"
+      - "5050:8081"
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - userauth.api
+      - order.api
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  userauth.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_HTTP_PORTS=8080
+    env_file:
+      - .env
+      - microservices/UserAuth/UserAuth.API/.env
+    ports:
+      - "8080"
+      - "8081"
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  userauth.api.migrations:
+    profiles: ["migrations"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Migration
+    env_file:
+      - microservices/UserAuth/UserAuth.API/.env
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  order.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    env_file:
+      - .env
+      - microservices/Order/Order.API/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  order.api.migrations:
+    profiles: ["migrations"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Migration
+    env_file:
+      - microservices/Order/Order.API/.env
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      
+ 
+  admin.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    env_file:
+      - .env
+      - microservices/AdminAuth/Admin.API/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  admin.api.migrations:
+    profiles: ["migrations"]
+    environment:
+       - ASPNETCORE_ENVIRONMENT=Migration
+    env_file:
+      - microservices/AdminAuth/Admin.API/.env
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+
+
+
+  companypoints.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    env_file:
+      - .env
+      - microservices/CompanyPoints/CompanyPoints.API/.env
+    ports:
+      - "8080"
+      - "8081"
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  companypoints.api.migrations:
+    profiles: ["migrations"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Migration
+    env_file:
+      - microservices/CompanyPoints/CompanyPoints.API/.env
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  
+
+
+
+
+  email.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    env_file:
+      - .env
+      - microservices/Email/Email.API/.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+ 
+
+
+  orderhistory.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    env_file:
+      - .env
+      - microservices/OrderHistory/OrderHistory.API/.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - internal
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  orderhistory.api.migrations:
+    profiles: ["migrations"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Migration
+    env_file:
+      - microservices/OrderHistory/OrderHistory.API/.env
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+ 
+      
+  chat.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    depends_on:
+      - ollama
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    networks:
+      - internal
+networks:
+  internal:
+    name: internal
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  ollama_data:
+  
+
+
+
+
+
+
+

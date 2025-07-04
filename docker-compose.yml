@@ -1,0 +1,88 @@
+services:
+  redis:
+    image: redis
+  rabbitmq:
+    image: rabbitmq:management
+  ollama:
+    image: ollama/ollama
+
+  api-gateaway:
+    image: ${DOCKER_REGISTRY-}yarpapigateaway
+    build:
+      context: .
+      dockerfile: gateaway/YarpApiGateaway/Dockerfile
+
+  userauth.api:
+    image: ${DOCKER_REGISTRY-}userauthapi
+    build:
+      context: .
+      dockerfile: microservices/UserAuth/UserAuth.API/Dockerfile
+  userauth.api.migrations:
+    image: ${DOCKER_REGISTRY-}userauthapi
+    build:
+      context: .
+      dockerfile: microservices/UserAuth/UserAuth.API/Dockerfile
+  
+
+
+  order.api:
+    image: ${DOCKER_REGISTRY-}orderapi
+    build:
+      context: .
+      dockerfile: microservices/Order/Order.API/Dockerfile
+  order.api.migrations:
+    image: ${DOCKER_REGISTRY-}orderapi
+    build:
+      context: .
+      dockerfile: microservices/Order/Order.API/Dockerfile
+      
+
+
+  admin.api:
+    image: ${DOCKER_REGISTRY-}adminapi
+    build:
+      context: .
+      dockerfile: microservices/AdminAuth/Admin.API/Dockerfile
+  admin.api.migrations:
+    image: ${DOCKER_REGISTRY-}adminapi
+    build:
+      context: .
+      dockerfile: microservices/AdminAuth/Admin.API/Dockerfile
+
+
+  companypoints.api:
+    image: ${DOCKER_REGISTRY-}companypointsapi
+    build:
+      context: .
+      dockerfile: microservices/CompanyPoints/CompanyPoints.API/Dockerfile
+  companypoints.api.migrations:
+    image: ${DOCKER_REGISTRY-}companypointsapi
+    build:
+      context: .
+      dockerfile: microservices/CompanyPoints/CompanyPoints.API/Dockerfile
+      
+  email.api:
+    image: ${DOCKER_REGISTRY-}emailapi
+    build:
+      context: .
+      dockerfile: microservices/Email/Email.API/Dockerfile
+
+
+  orderhistory.api:
+    image: ${DOCKER_REGISTRY-}orderhistoryapi
+    build:
+      context: .
+      dockerfile: microservices/OrderHistory/OrderHistory.API/Dockerfile
+  orderhistory.api.migrations:
+    image: ${DOCKER_REGISTRY-}orderhistoryapi
+    build:
+      context: .
+      dockerfile: microservices/OrderHistory/OrderHistory.API/Dockerfile
+
+
+  chat.api:
+    image: ${DOCKER_REGISTRY-}chatapi
+    build:
+      context: .
+      dockerfile: microservices/Chat/Chat.API/Dockerfile
+
